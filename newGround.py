@@ -1,5 +1,6 @@
 import socket             
 import cv2
+import time
 import numpy as np
 
 port = 12345
@@ -32,18 +33,19 @@ def main():
             msgFromServer = udp.recvfrom(buffer_size)
             data += msgFromServer[0]
 
-        
-        # Decode frame
-        data = np.fromstring(data, dtype=np.uint8)
-        frame = cv2.imdecode(data, 1)
-
         try:
+            # Decode frame
+            data = np.fromstring(data, dtype=np.uint8)
+            frame = cv2.imdecode(data, 1)
+
             # Display the resulting frame 
             cv2.imshow('frame', frame) 
         
         except Exception as e:
+            cv2.destroyAllWindows()
+            udp.settimeout(0.1) # need to be called for every exception
             continue
-        
+
         # 'q' key is set to quit
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break

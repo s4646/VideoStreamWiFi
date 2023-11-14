@@ -38,7 +38,7 @@ def main():
     # Get frame size
     ret, frame = video.read()
     number_of_chunks = (len(cv2.imencode('.jpg', frame)[1].tobytes()) // buffer_size) + 1
-    print("chunks:",number_of_chunks)
+    # print("chunks:",number_of_chunks)
     c.send(str(number_of_chunks).encode())
     
     try:
