@@ -5,26 +5,33 @@ import numpy as np
 
 port = 12345
 buffer_size = 1024
-server_address = "localhost"
+ip_address = "localhost"
 
 ###
 # Ground Station
-# Client
+# Server
 ###
 
 def main():
 
+    # Initiate sockets
     udp = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
     tcp = socket.socket(family=socket.AF_INET, type=socket.SOCK_STREAM)
-    udp.connect((server_address, port))
-    tcp.connect((server_address, port))
-    
-    # Send a message to the server so your address will be known
-    udp.sendto(" ".encode(), ("localhost", port))
+    print("Sockets initiated")
 
-    number_of_chunks = int(tcp.recv(buffer_size).decode())
+    # Bind sockets
+    udp.bind((ip_address, port))
+    tcp.bind((ip_address, port))
+    tcp.listen(1)
 
+    # Accept client connection
+    c, client_IP = tcp.accept()
+    print(f"Client IP Address: {client_IP}")
 
+    # Receive frame size from client 
+    number_of_chunks = int(c.recv(buffer_size).decode())
+
+    print("START STREAMING")
     while True:
         
         # Receive frame
@@ -52,6 +59,7 @@ def main():
             
 
     udp.close()
+    c.close()
     tcp.close()
     cv2.destroyAllWindows()
 

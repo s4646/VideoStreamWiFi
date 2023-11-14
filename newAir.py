@@ -9,7 +9,7 @@ server_address = "localhost"
 
 ###
 # Air Station
-# Server
+# Client
 ###
 
 def main():
@@ -23,24 +23,18 @@ def main():
     print("Sockets initiated")
     
     # Bind sockets
-    udp.bind((server_address, port))
-    tcp.bind((server_address, port))
-    tcp.listen(1)
-    print("Sockets binded to port", port)
-    print("Waiting for client connection")
-    
-    # Get client IP
-    bytesAddressPair = udp.recvfrom(buffer_size)
-    client_IP = bytesAddressPair[1]
-    c, c_addr = tcp.accept()
-    print(f"Client IP Address: {client_IP}")
+    udp.connect((server_address, port))
+    tcp.connect((server_address, port))
+
+    print("Sockets connected to port", port)
 
     # Get frame size
     ret, frame = video.read()
     number_of_chunks = (len(cv2.imencode('.jpg', frame)[1].tobytes()) // buffer_size) + 1
     # print("chunks:",number_of_chunks)
-    c.send(str(number_of_chunks).encode())
+    tcp.send(str(number_of_chunks).encode())
     
+    print("START STREAMING")
     try:
         while True:
             
@@ -50,14 +44,13 @@ def main():
 
             # Send frame
             for i in range(number_of_chunks):
-                udp.sendto(data[i*buffer_size : (i+1)*buffer_size], client_IP)
+                udp.sendto(data[i*buffer_size : (i+1)*buffer_size], (server_address, port))
 
     except KeyboardInterrupt as e:    
         udp.close()
-        c.close()
         tcp.close()
         video.release()
-        print(f"\nError: {e}, Finished")
+        print(f"\nFinished")
 
 if __name__ == "__main__":
     main()
