@@ -19,6 +19,7 @@ def main():
     # Send a message to the server so your address will be known
     udp.sendto(" ".encode(), ("localhost", port))
 
+    print(tcp.recv(buffer_size).decode())
     msg = ""
     while msg != b'exit':
         
@@ -28,6 +29,7 @@ def main():
         print(f"Message from Server {server_IP}: {msg.decode()}")
 
     udp.close()
+    tcp.close()
 
 if __name__ == "__main__":
     main()
