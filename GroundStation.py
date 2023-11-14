@@ -13,8 +13,10 @@ server_address = "localhost"
 def main():
 
     # Inititate camera connection
+    print("Connecting to server")
     video = cv2.VideoCapture(f'udp://{server_address}:{port}')
-
+    print("Connected!")
+    
     while True:
 
         # Capture the video frame by frame 
