@@ -23,8 +23,8 @@ def main():
     print("Sockets initiated")
     
     # Bind sockets
-    udp.bind(("localhost", port))
-    tcp.bind(("localhost", port))
+    udp.bind((server_address, port))
+    tcp.bind((server_address, port))
     tcp.listen(1)
     print("Sockets binded to port", port)
     print("Waiting for client connection")
