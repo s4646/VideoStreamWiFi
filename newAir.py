@@ -30,7 +30,7 @@ def main():
 
     # Get frame size
     ret, frame = video.read()
-    number_of_chunks = (len(cv2.imencode('.webp', frame)[1].tobytes()) // buffer_size) + 1
+    number_of_chunks = (len(cv2.imencode('.jpg', frame)[1].tobytes()) // buffer_size) + 1
     # print("chunks:",number_of_chunks)
     tcp.send(str(number_of_chunks).encode())
     

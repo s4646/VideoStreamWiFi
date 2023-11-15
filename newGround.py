@@ -51,7 +51,7 @@ def main():
         except Exception as e:
             print(f"ERROR: {e}")
             # cv2.destroyAllWindows()
-            udp.settimeout(0.1) # need to be called for every exception
+            # udp.settimeout(0.1) # need to be called for every exception
             continue
 
         # 'q' key is set to quit
