@@ -42,14 +42,15 @@ def main():
 
         try:
             # Decode frame
-            data = np.fromstring(data, dtype=np.uint8)
+            data = np.frombuffer(data, dtype=np.uint8)
             frame = cv2.imdecode(data, 1)
 
             # Display the resulting frame 
             cv2.imshow('frame', frame) 
         
         except Exception as e:
-            cv2.destroyAllWindows()
+            print(f"ERROR: {e}")
+            # cv2.destroyAllWindows()
             udp.settimeout(0.1) # need to be called for every exception
             continue
 
