@@ -1,7 +1,5 @@
 import cv2
-import pickle
 import socket
-import struct
 
 port = 12345
 buffer_size = 1024
@@ -26,13 +24,34 @@ def main():
     # Send frame size to server
     ret = False
     while not ret: ret, frame = video.read()
-    frame_size = len(pickle.dumps(frame))
-    number_of_chunks = struct.pack("L", (frame_size) // buffer_size + 1)
-    tcp.send(number_of_chunks)
+    frame_size = len(cv2.imencode('.jpg', frame)[1].tobytes())
+    number_of_chunks = ((frame_size) // buffer_size + 1)
+    tcp.send(number_of_chunks.to_bytes(4, "big"))
 
-    tcp.close()
-    udp.close()
-    video.release()
+    try:
+        while video.isOpened():
+            
+            # Get frame from video capture
+            ret = False
+            while not ret: ret, frame = video.read()
+
+            # Encode frame
+            data = cv2.imencode('.jpg', frame)[1].tobytes()
+            
+            for i in range(number_of_chunks):
+                
+                # Send indexed frame segment
+                index = i.to_bytes(4, "big")
+                segment_size = buffer_size - len(index)
+                frame_segment = data[i*segment_size : (i+1)*segment_size]
+                
+                udp.sendto(index + frame_segment, (server_address, port))
+    
+    except KeyboardInterrupt:
+        tcp.close()
+        udp.close()
+        video.release()
+        print("\nFinished")
 
 if __name__ == "__main__":
     main()
