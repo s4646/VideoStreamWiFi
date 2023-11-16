@@ -1,87 +1,35 @@
 import cv2
-import socket
 import numpy as np
+import socket
+import struct
 
 port = 12345
-buffer_size = 1024
-ip_address = "localhost"
-index_length = 4
+server_address = "localhost"
 
-def main():
+# Create a UDP socket
+udp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
-    # Create socket objects
-    udp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    tcp = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    print("Socket initiated")
+udp.bind((server_address, port))
+try:
+    while True:
+        # Receive data length first
+        data_len, addr = udp.recvfrom(struct.calcsize("L"))
 
-    # Bind the sockets to a specific address and port
-    udp.bind((ip_address, port))
-    tcp.bind((ip_address, port))
-    print("Sockets binded")
+        # Then receive data
+        data, addr = udp.recvfrom(struct.unpack("L", data_len)[0])
 
-    # Listen to socket and accept tcp connection from client
-    tcp.listen(1)
-    client_socket, client_address = tcp.accept()
+        # Decode data as jpg
+        frame = np.frombuffer(data, dtype=np.uint8)
+        frame = cv2.imdecode(frame, cv2.IMREAD_COLOR)
 
-    # Receive frame size from client
-    data = b""
-    data += client_socket.recv(buffer_size)
-    number_of_chunks = int.from_bytes(data, "big")
+        cv2.imshow('frame', frame)
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
 
-    try:
-        
-        index = -1
-        is_organised = True
-        while True:
-            
-            # Get unsorted indexed data from client
-            unorganised_data = []
-            for i in range(number_of_chunks):
-                packet = udp.recvfrom(buffer_size)[0]
-                index = int.from_bytes(packet[:index_length], "big")
-                data = packet[index_length:]
-                unorganised_data.append((index, data))
-                if i != index:
-                    is_organised = False
-                    print("NOT ORGANISED")
-            
-            # Sort frame's data
-            data = sorted(unorganised_data)
+except KeyboardInterrupt:        
+    cv2.destroyAllWindows()
+    udp.close()
 
-            # Build and decode the frame
-            frame = b''
-            for segment in data:
-                frame += segment[1]
-            
-            frame = np.frombuffer(frame, dtype=np.uint8)
-            frame = cv2.imdecode(frame, 1)
-
-            # Display the resulting frame 
-            cv2.imshow('frame', frame)
-
-            # 'q' key is set to quit
-            if cv2.waitKey(1) & 0xFF == ord('q'):
-                break
-
-            # Reset packets order
-            if not is_organised:
-                while index != (number_of_chunks - 1):
-                    packet = udp.recvfrom(buffer_size)[0]
-                    index = int.from_bytes(packet[:index_length], "big")
-                is_organised = True
-    
-    except Exception:
-        cv2.destroyAllWindows()
-        client_socket.close()
-        tcp.close()
-        udp.close()
-        print("\nFinished")
-
-
-if __name__ == "__main__":
-    main()
-
-
-
-
-    
+else:
+    cv2.destroyAllWindows()
+    udp.close()
