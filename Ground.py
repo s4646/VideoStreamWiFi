@@ -38,7 +38,7 @@ def main():
                 index = int.from_bytes(packet[:index_length], "big")
                 data = packet[index_length:]
                 unorganised_data.append((index, data))
-                if i != index: print("NOT ORGANISED!!!")
+                # if i != index: print("NOT ORGANISED!!!")
             
             # Sort frame's data
             data = sorted(unorganised_data)

@@ -43,7 +43,10 @@ def main():
                 # Send indexed frame segment
                 index = i.to_bytes(4, "big")
                 segment_size = buffer_size - len(index)
-                frame_segment = data[i*segment_size : (i+1)*segment_size]
+                if i == 0:
+                    frame_segment = data[0 : segment_size]
+                else:
+                    frame_segment = data[i*segment_size : (i+1)*segment_size]
                 
                 udp.sendto(index + frame_segment, (server_address, port))
     
