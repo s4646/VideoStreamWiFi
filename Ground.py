@@ -10,13 +10,14 @@ server_address = "localhost"
 udp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
 udp.bind((server_address, port))
-try:
-    while True:
+
+while True:
+    try:
         # Receive data length first
-        data_len, addr = udp.recvfrom(struct.calcsize("L"))
+        data_len, addr = udp.recvfrom(struct.calcsize("<L"))
 
         # Then receive data
-        data, addr = udp.recvfrom(struct.unpack("L", data_len)[0])
+        data, addr = udp.recvfrom(struct.unpack("<L", data_len)[0])
 
         # Decode data as jpg
         frame = np.frombuffer(data, dtype=np.uint8)
@@ -24,12 +25,13 @@ try:
 
         cv2.imshow('frame', frame)
         if cv2.waitKey(1) & 0xFF == ord('q'):
+            cv2.destroyAllWindows()
+            udp.close()
             break
 
-except KeyboardInterrupt:        
-    cv2.destroyAllWindows()
-    udp.close()
-
-else:
-    cv2.destroyAllWindows()
-    udp.close()
+    except Exception as e: 
+        if type(e) == KeyboardInterrupt:     
+            cv2.destroyAllWindows()
+            udp.close()
+        else:
+            continue

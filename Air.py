@@ -25,7 +25,7 @@ try:
         data = frame.tobytes()
 
         # Send data length first
-        udp.sendto(struct.pack("L", len(data)), (server_address, port))
+        udp.sendto(struct.pack("<L", len(data)), (server_address, port))
 
         # Then data
         udp.sendto(data, (server_address, port))
