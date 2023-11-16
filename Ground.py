@@ -29,6 +29,9 @@ def main():
     number_of_chunks = int.from_bytes(data, "big")
 
     try:
+        
+        index = -1
+        is_organised = True
         while True:
             
             # Get unsorted indexed data from client
@@ -38,7 +41,9 @@ def main():
                 index = int.from_bytes(packet[:index_length], "big")
                 data = packet[index_length:]
                 unorganised_data.append((index, data))
-                # if i != index: print("NOT ORGANISED!!!")
+                if i != index:
+                    is_organised = False
+                    print("NOT ORGANISED")
             
             # Sort frame's data
             data = sorted(unorganised_data)
@@ -57,6 +62,13 @@ def main():
             # 'q' key is set to quit
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
+
+            # Reset packets order
+            if not is_organised:
+                while index != (number_of_chunks - 1):
+                    packet = udp.recvfrom(buffer_size)[0]
+                    index = int.from_bytes(packet[:index_length], "big")
+                is_organised = True
     
     except Exception:
         cv2.destroyAllWindows()
